@@ -2,33 +2,63 @@ import { FastifyInstance } from 'fastify'
 import { knex } from '../database'
 import { z } from 'zod'
 import { randomUUID } from 'crypto'
+import checkSessionIdExists from '../middlewares/check-session-id-exists'
 
 export const transactionsRoutes = async (app: FastifyInstance) => {
-  app.get('/summary', async (req, res) => {
-    const summary = await knex('transactions')
-      .sum('amount', { as: 'ammount' })
-      .first()
+  app.get(
+    '/summary',
+    {
+      preHandler: checkSessionIdExists,
+    },
+    async (req, res) => {
+      const { sessionId } = req.cookies
 
-    return res.send({ summary })
-  })
+      const summary = await knex('transactions')
+        .where('session_id', sessionId)
+        .sum('amount', { as: 'ammount' })
+        .first()
 
-  app.get('/', async (req, res) => {
-    const transactions = await knex('transactions').select()
+      return res.send({ summary })
+    },
+  )
 
-    return res.send({ transactions })
-  })
+  app.get(
+    '/',
+    {
+      preHandler: checkSessionIdExists,
+    },
+    async (req, res) => {
+      const { sessionId } = req.cookies
 
-  app.get('/:id', async (req, res) => {
-    const transactionSchema = z.object({
-      id: z.string().uuid(),
-    })
+      const transactions = await knex('transactions')
+        .where('session_id', sessionId)
+        .select()
 
-    const { id } = transactionSchema.parse(req.params)
+      return res.send({ transactions })
+    },
+  )
 
-    const transaction = await knex('transactions').where('id', id).first()
+  app.get(
+    '/:id',
+    {
+      preHandler: checkSessionIdExists,
+    },
+    async (req, res) => {
+      const transactionSchema = z.object({
+        id: z.string().uuid(),
+      })
+      const { sessionId } = req.cookies
 
-    return res.send({ transaction })
-  })
+      const { id } = transactionSchema.parse(req.params)
+
+      const transaction = await knex('transactions')
+        .where('session_id', sessionId)
+        .where('id', id)
+        .first()
+
+      return res.send({ transaction })
+    },
+  )
 
   app.post('/', async (req, res) => {
     const transactionSchema = z.object({
