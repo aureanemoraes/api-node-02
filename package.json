@@ -6,7 +6,8 @@
   "scripts": {
     "dev": "tsx watch src/server.ts",
     "lint": "eslint src db --ext .ts --fix",
-    "knex": "node --no-warnings --loader tsx ./node_modules/.bin/knex"
+    "knex": "node --no-warnings --loader tsx ./node_modules/.bin/knex",
+    "test": "vitest"
   },
   "author": "",
   "license": "ISC",
@@ -15,7 +16,8 @@
     "@types/node": "^18.15.10",
     "eslint": "^8.36.0",
     "tsx": "^3.12.6",
-    "typescript": "^5.0.2"
+    "typescript": "^5.0.2",
+    "vitest": "^0.29.8"
   },
   "dependencies": {
     "@fastify/cookie": "^8.3.0",
